@@ -14,32 +14,9 @@ class ViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let urlString: String
         
-        let creditsButton = UIBarButtonItem(title: "Credits", style: .plain, target: self, action: #selector(credits))
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Filter", style: .plain, target: self, action: #selector(filteredCases))
-        
-        let refresh = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refreshTable))
-        navigationItem.rightBarButtonItems = [refresh, creditsButton]
-            
-        if navigationController?.tabBarItem.tag == 0 {
-            urlString = "https://www.hackingwithswift.com/samples/petitions-1.json"
-        } else {
-            urlString = "https://api.whitehouse.gov/v1/petitions.json?signatureCountFloor=10000&limit=100"
-        }
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            [weak self] in
-                if let url = URL(string: urlString) {
-                    if let data = try? Data(contentsOf: url) {
-                        self?.parse(json: data)
-                        self?.filteredPetitions = self!.petitions
-                        return
-                    }
-                }
-            self?.showError()
-
-        }
+        performSelector(inBackground: #selector(fetchJson), with: nil)
+       
     }
     
     @objc func refreshTable(){
@@ -58,6 +35,31 @@ class ViewController: UITableViewController {
                 ac.addAction(submitAction)
                 present(ac, animated: true, completion: nil)
     }
+    @objc func fetchJson() {
+        let urlString: String
+        
+        let creditsButton = UIBarButtonItem(title: "Credits", style: .plain, target: self, action: #selector(credits))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Filter", style: .plain, target: self, action: #selector(filteredCases))
+        
+        let refresh = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refreshTable))
+        navigationItem.rightBarButtonItems = [refresh, creditsButton]
+            
+        if navigationController?.tabBarItem.tag == 0 {
+            urlString = "https://www.hackingwithswift.com/samples/petitions-1.json"
+        } else {
+            urlString = "https://api.whitehouse.gov/v1/petitions.json?signatureCountFloor=10000&limit=100"
+        }
+        
+            if let url = URL(string: urlString) {
+                if let data = try? Data(contentsOf: url) {
+                    parse(json: data)
+                    filteredPetitions = petitions
+                        return
+                    }
+            }
+        performSelector(onMainThread: #selector(showError), with: nil, waitUntilDone: false)
+    }
+    
     func submit(_ answer:String) {
         filteredPetitions.removeAll(keepingCapacity: true)
         for petition in petitions {
@@ -79,13 +81,10 @@ class ViewController: UITableViewController {
         
     }
     
-    func showError() {
-        DispatchQueue.main.async { [weak self] in
+    @objc func showError() {
                 let ac = UIAlertController(title: "Loading error", message: "There was a problem loading the feed; please check your connection and try again.", preferredStyle: .alert)
                 ac.addAction(UIAlertAction(title: "OK", style: .default))
-                self?.present(ac, animated: true)
-        }
-       
+                present(ac, animated: true)
         
     }
     func parse(json: Data) {
@@ -94,9 +93,9 @@ class ViewController: UITableViewController {
         if let jsonPetitions = try? decoder.decode(Petitions.self, from: json) {
             petitions = jsonPetitions.results
             
-            DispatchQueue.main.async { [weak self] in
-                self?.tableView.reloadData()
-            }
+            tableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: false)
+        } else {
+            performSelector(onMainThread: #selector(showError), with: nil, waitUntilDone: false)
         }
     }
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
