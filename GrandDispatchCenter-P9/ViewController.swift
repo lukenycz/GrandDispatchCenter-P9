@@ -28,14 +28,17 @@ class ViewController: UITableViewController {
             urlString = "https://api.whitehouse.gov/v1/petitions.json?signatureCountFloor=10000&limit=100"
         }
         
-        if let url = URL(string: urlString) {
-            if let data = try? Data(contentsOf: url) {
-             parse(json: data)
-                filteredPetitions = petitions
-                return
-            }
+        DispatchQueue.global(qos: .userInitiated).async {
+            [weak self] in
+                if let url = URL(string: urlString) {
+                    if let data = try? Data(contentsOf: url) {
+                        self?.parse(json: data)
+                        self?.filteredPetitions = self!.petitions
+                        return
+                    }
+                }
+            self?.showError()
         }
-            showError()
     }
     
     @objc func refreshTable(){
