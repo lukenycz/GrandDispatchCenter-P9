@@ -14,6 +14,7 @@ class ViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+
         let urlString: String
         
         let creditsButton = UIBarButtonItem(title: "Credits", style: .plain, target: self, action: #selector(credits))
