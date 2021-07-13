@@ -14,7 +14,7 @@ class ViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        UIbuttons()
         performSelector(inBackground: #selector(fetchJson), with: nil)
        
     }
@@ -37,12 +37,6 @@ class ViewController: UITableViewController {
     }
     @objc func fetchJson() {
         let urlString: String
-        
-        let creditsButton = UIBarButtonItem(title: "Credits", style: .plain, target: self, action: #selector(credits))
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Filter", style: .plain, target: self, action: #selector(filteredCases))
-        
-        let refresh = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refreshTable))
-        navigationItem.rightBarButtonItems = [refresh, creditsButton]
             
         if navigationController?.tabBarItem.tag == 0 {
             urlString = "https://www.hackingwithswift.com/samples/petitions-1.json"
@@ -59,7 +53,13 @@ class ViewController: UITableViewController {
             }
         performSelector(onMainThread: #selector(showError), with: nil, waitUntilDone: false)
     }
-    
+    func UIbuttons() {
+        let creditsButton = UIBarButtonItem(title: "Credits", style: .plain, target: self, action: #selector(credits))
+       navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Filter", style: .plain, target: self, action: #selector(filteredCases))
+        
+        let refresh = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refreshTable))
+        navigationItem.rightBarButtonItems = [refresh, creditsButton]
+    }
     func submit(_ answer:String) {
         filteredPetitions.removeAll(keepingCapacity: true)
         for petition in petitions {
