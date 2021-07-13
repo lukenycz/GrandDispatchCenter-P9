@@ -14,9 +14,38 @@ class ViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+
         UIbuttons()
         performSelector(inBackground: #selector(fetchJson), with: nil)
        
+
+
+        let urlString: String
+        
+        let creditsButton = UIBarButtonItem(title: "Credits", style: .plain, target: self, action: #selector(credits))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Filter", style: .plain, target: self, action: #selector(filteredCases))
+        
+        let refresh = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refreshTable))
+        navigationItem.rightBarButtonItems = [refresh, creditsButton]
+            
+        if navigationController?.tabBarItem.tag == 0 {
+            urlString = "https://www.hackingwithswift.com/samples/petitions-1.json"
+        } else {
+            urlString = "https://api.whitehouse.gov/v1/petitions.json?signatureCountFloor=10000&limit=100"
+        }
+        
+        DispatchQueue.global(qos: .userInitiated).async {
+            [weak self] in
+                if let url = URL(string: urlString) {
+                    if let data = try? Data(contentsOf: url) {
+                        self?.parse(json: data)
+                        self?.filteredPetitions = self!.petitions
+                        return
+                    }
+                }
+            self?.showError()
+        }
+
     }
     
     @objc func refreshTable(){
