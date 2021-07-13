@@ -70,7 +70,6 @@ class ViewController: UITableViewController {
         }
         petitions += filteredPetitions
         tableView.reloadData()
-        
     }
     
     @objc func credits() {
